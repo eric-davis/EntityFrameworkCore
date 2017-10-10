@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.TestModels.TransportationModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 // ReSharper disable InconsistentNaming
@@ -79,11 +78,48 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
+        [Fact]
+        public void Can_change_dependent_instance_non_derived()
+        {
+            using (CreateTestStore(modelBuilder =>
+                {
+                    OnModelCreating(modelBuilder);
+                    modelBuilder.Entity<Engine>().ToTable("Engines");
+                    modelBuilder.Entity<FuelTank>(
+                        eb =>
+                            {
+                                eb.ToTable("FuelTanks");
+                                eb.HasOne(e => e.Engine)
+                                    .WithOne(e => e.FuelTank)
+                                    .HasForeignKey<FuelTank>(e => e.VehicleName)
+                                    .OnDelete(DeleteBehavior.Restrict);
+                            });
+                }))
+            {
+                using (var context = CreateContext())
+                {
+                    context.AssertSeeded();
+
+                    var bike = context.Vehicles.Include(v => v.Operator).Single(v => v.Name == "Trek Pro Fit Madone 6 Series");
+                    bike.Operator = new Operator { Name = "Chris Horner" };
+
+                    context.SaveChanges();
+                }
+
+                using (var context = CreateContext())
+                {
+                    var bike = context.Vehicles.Include(v => v.Operator).Single(v => v.Name == "Trek Pro Fit Madone 6 Series");
+                    Assert.Equal("Chris Horner", bike.Operator.Name);
+
+                    context.SaveChanges();
+                }
+            }
+        }
+
         protected readonly string DatabaseName = "TableSplittingTest";
         protected TestStore TestStore { get; set; }
         protected abstract ITestStoreFactory TestStoreFactory { get; }
         protected IServiceProvider ServiceProvider { get; set; }
-        public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ServiceProvider.GetRequiredService<ILoggerFactory>();
 
         protected virtual void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -104,7 +140,7 @@ namespace Microsoft.EntityFrameworkCore
         {
             TestStore = TestStoreFactory.GetOrCreate(DatabaseName);
 
-            ServiceProvider = AddServices(TestStoreFactory.AddProviderServices(new ServiceCollection()))
+            ServiceProvider = TestStoreFactory.AddProviderServices(new ServiceCollection())
                 .AddSingleton(TestModelSource.GetFactory(onModelCreating))
                 .BuildServiceProvider(validateScopes: true);
 
@@ -112,9 +148,6 @@ namespace Microsoft.EntityFrameworkCore
 
             return TestStore;
         }
-
-        protected virtual IServiceCollection AddServices(IServiceCollection serviceCollection)
-            => serviceCollection.AddSingleton<ILoggerFactory>(TestSqlLoggerFactory);
 
         protected virtual DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
             => builder
