@@ -15,7 +15,7 @@ namespace Microsoft.EntityFrameworkCore
     public abstract class TableSplittingTestBase
     {
         [Fact(Skip = "#8973")]
-        public void Can_query_shared()
+        public virtual void Can_query_shared()
         {
             using (CreateTestStore(OnModelCreating))
             {
@@ -27,7 +27,7 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         [Fact(Skip = "#8973")]
-        public void Can_query_shared_derived()
+        public virtual void Can_query_shared_derived()
         {
             using (CreateTestStore(OnModelCreating))
             {
@@ -39,13 +39,13 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         [Fact(Skip = "#8973")]
-        public void Can_use_with_redundant_relationships()
+        public virtual void Can_use_with_redundant_relationships()
         {
             Test_roundtrip(OnModelCreating);
         }
 
         [Fact(Skip = "#8973")]
-        public void Can_use_with_chained_relationships()
+        public virtual void Can_use_with_chained_relationships()
         {
             Test_roundtrip(
                 modelBuilder =>
@@ -56,7 +56,7 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         [Fact(Skip = "#8973")]
-        public void Can_use_with_fanned_relationships()
+        public virtual void Can_use_with_fanned_relationships()
         {
             Test_roundtrip(
                 modelBuilder =>
@@ -79,7 +79,7 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         [Fact]
-        public void Can_change_dependent_instance_non_derived()
+        public virtual void Can_change_dependent_instance_non_derived()
         {
             using (CreateTestStore(modelBuilder =>
                 {
@@ -101,6 +101,11 @@ namespace Microsoft.EntityFrameworkCore
                     context.AssertSeeded();
 
                     var bike = context.Vehicles.Include(v => v.Operator).Single(v => v.Name == "Trek Pro Fit Madone 6 Series");
+
+                    bike.Operator = new Operator { Name = "repairman" };
+
+                    context.ChangeTracker.DetectChanges();
+
                     bike.Operator = new Operator { Name = "Chris Horner" };
 
                     context.SaveChanges();

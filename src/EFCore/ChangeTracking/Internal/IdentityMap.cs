@@ -349,7 +349,7 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
                 otherEntry.SharedIdentityEntry = null;
                 entry.SharedIdentityEntry = null;
 
-                if (entry.EntityState == EntityState.Deleted)
+                if (otherEntry.EntityState != EntityState.Deleted)
                 {
                     return;
                 }
