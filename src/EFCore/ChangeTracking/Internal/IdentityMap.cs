@@ -222,38 +222,40 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
 
         private void Add(TKey key, InternalEntityEntry entry, bool updateDuplicate)
         {
-            if (_identityMap.TryGetValue(key, out var existingEntry)
-                && !updateDuplicate)
+            if (_identityMap.TryGetValue(key, out var existingEntry))
             {
-                if (existingEntry == entry)
+                var bothStatesEquivalent = (entry.EntityState == EntityState.Deleted) == (existingEntry.EntityState == EntityState.Deleted);
+                if (!updateDuplicate)
                 {
-                    return;
-                }
-
-                if (!_snapshotTracking
-                    || (entry.EntityState == EntityState.Deleted) == (existingEntry.EntityState == EntityState.Deleted))
-                {
-                    ThrowIdentityConflict(entry);
-                }
-
-                if (existingEntry.SharedIdentityEntry != null)
-                {
-                    if (existingEntry.SharedIdentityEntry == entry)
+                    if (existingEntry == entry)
                     {
                         return;
                     }
-                    ThrowIdentityConflict(entry);
-                }
-            }
 
-            if (existingEntry != null
-                && (entry.EntityState == EntityState.Deleted) != (existingEntry.EntityState == EntityState.Deleted))
-            {
-                entry.SharedIdentityEntry = existingEntry;
-                existingEntry.SharedIdentityEntry = entry;
-                if (existingEntry.EntityState != EntityState.Deleted)
+                    if (!_snapshotTracking
+                        || bothStatesEquivalent)
+                    {
+                        ThrowIdentityConflict(entry);
+                    }
+
+                    if (existingEntry.SharedIdentityEntry != null)
+                    {
+                        if (existingEntry.SharedIdentityEntry == entry)
+                        {
+                            return;
+                        }
+                        ThrowIdentityConflict(entry);
+                    }
+                }
+
+                if (!bothStatesEquivalent)
                 {
-                    return;
+                    entry.SharedIdentityEntry = existingEntry;
+                    existingEntry.SharedIdentityEntry = entry;
+                    if (existingEntry.EntityState != EntityState.Deleted)
+                    {
+                        return;
+                    }
                 }
             }
 
@@ -355,7 +357,14 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
                 }
             }
 
-            _identityMap.Remove(key);
+            if (otherEntry == null)
+            {
+                _identityMap.Remove(key);
+            }
+            else
+            {
+                _identityMap[key] = otherEntry;
+            }
 
             if (_dependentMaps != null
                 && _foreignKeys != null)

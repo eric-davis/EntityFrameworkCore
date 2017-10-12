@@ -262,27 +262,6 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
             }
 
             StateManager.InternalEntityEntryNotifier.StateChanged(this, oldState, fromQuery: false);
-
-            if (SharedIdentityEntry != null)
-            {
-                if (newState == EntityState.Deleted)
-                {
-                    ResolveSharedIdentityEntry(this, SharedIdentityEntry);
-                }
-
-                ResolveSharedIdentityEntry(SharedIdentityEntry, this);
-            }
-        }
-
-        private static void ResolveSharedIdentityEntry(InternalEntityEntry deletedEntry, InternalEntityEntry newEntry)
-        {
-            foreach (var property in newEntry.EntityType.GetProperties())
-            {
-                newEntry.SetOriginalValue(property, deletedEntry.GetOriginalValue(property));
-            }
-
-            deletedEntry.SetEntityState(EntityState.Detached);
-            newEntry.SetEntityState(EntityState.Modified);
         }
 
         /// <summary>
@@ -862,6 +841,7 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
                 || (currentState == EntityState.Modified))
             {
                 _originalValues.AcceptChanges(this);
+                SharedIdentityEntry?.AcceptChanges();
 
                 SetEntityState(EntityState.Unchanged, true);
             }
@@ -1179,5 +1159,7 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
                 && EntityState != EntityState.Detached
                 && this[navigation] != null)
                || _stateData.IsPropertyFlagged(navigation.GetIndex(), PropertyFlag.IsLoaded);
+
+        IUpdateEntry IUpdateEntry.SharedIdentityEntry => SharedIdentityEntry;
     }
 }

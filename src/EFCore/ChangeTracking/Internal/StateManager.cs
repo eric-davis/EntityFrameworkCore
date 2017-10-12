@@ -429,7 +429,8 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
         /// </summary>
         public virtual IEnumerable<InternalEntityEntry> Entries => _entityReferenceMap.Values
             .Concat(_dependentTypeReferenceMap.Values.SelectMany(e => e.Values))
-            .Where(e => e.EntityState != EntityState.Detached);
+            .Where(e => e.EntityState != EntityState.Detached
+                        && (e.SharedIdentityEntry == null || e.EntityState != EntityState.Deleted));
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

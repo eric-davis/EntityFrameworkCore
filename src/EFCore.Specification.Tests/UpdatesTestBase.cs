@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -114,6 +114,33 @@ namespace Microsoft.EntityFrameworkCore
                             UpdateConcurrencyMessage,
                             Assert.Throws<DbUpdateConcurrencyException>(
                                 () => context.SaveChanges()).Message);
+                    });
+        }
+
+        [Fact]
+        public virtual void Save_replaced_principal()
+        {
+            ExecuteWithStrategyInTransaction(
+                context =>
+                    {
+                        var category = context.Categories.Single();
+                        var products = context.Products.Where(p => p.DependentId == category.PrincipalId).ToList();
+
+                        Assert.Equal(2, products.Count);
+
+                        var newCategory = new Category { Id = category.Id, PrincipalId = category.PrincipalId, Name = "New Category" };
+                        context.Remove(category);
+                        context.Add(newCategory);
+
+                        context.SaveChanges();
+                    },
+                context =>
+                    {
+                        var category = context.Categories.Single();
+                        var products = context.Products.Where(p => p.DependentId == category.PrincipalId).ToList();
+
+                        Assert.Equal("New Category", category.Name);
+                        Assert.Equal(2, products.Count);
                     });
         }
 

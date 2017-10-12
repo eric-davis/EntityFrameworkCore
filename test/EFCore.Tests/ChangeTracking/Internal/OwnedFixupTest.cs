@@ -387,14 +387,25 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
                 Assert.Same(dependent1, principal.Child2);
                 Assert.Same(dependent2, principal.Child1);
                 Assert.Equal(entityState, context.Entry(principal).State);
+
                 var dependent1Entry = context.Entry(principal).Reference(p => p.Child1).TargetEntry;
                 Assert.Equal(principal.Id, dependent1Entry.Property("ParentId").CurrentValue);
-                Assert.Equal(entityState == EntityState.Added ? EntityState.Added : EntityState.Modified, dependent1Entry.State);
+                Assert.Equal(EntityState.Added, dependent1Entry.State);
                 Assert.Equal(nameof(Parent.Child1), dependent1Entry.Metadata.DefiningNavigationName);
+                Assert.Equal(entityState == EntityState.Added ? null : (EntityState?)EntityState.Deleted,
+                    dependent1Entry.GetInfrastructure().SharedIdentityEntry?.EntityState);
+
                 var dependent2Entry = context.Entry(principal).Reference(p => p.Child2).TargetEntry;
                 Assert.Equal(principal.Id, dependent2Entry.Property("ParentId").CurrentValue);
-                Assert.Equal(entityState == EntityState.Added ? EntityState.Added : EntityState.Modified, dependent2Entry.State);
+                Assert.Equal(EntityState.Added, dependent2Entry.State);
                 Assert.Equal(nameof(Parent.Child2), dependent2Entry.Metadata.DefiningNavigationName);
+                Assert.Equal(entityState == EntityState.Added ? null : (EntityState?)EntityState.Deleted,
+                    dependent2Entry.GetInfrastructure().SharedIdentityEntry?.EntityState);
+
+                dependent1Entry.GetInfrastructure().AcceptChanges();
+                dependent2Entry.GetInfrastructure().AcceptChanges();
+                Assert.Null(dependent1Entry.GetInfrastructure().SharedIdentityEntry);
+                Assert.Null(dependent2Entry.GetInfrastructure().SharedIdentityEntry);
             }
         }
 
@@ -425,14 +436,25 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
                 Assert.Same(principal, dependent2.Parent);
                 Assert.Same(dependent2, principal.Child1);
                 Assert.Equal(entityState, context.Entry(principal).State);
+
                 var dependent1Entry = context.Entry(principal).Reference(p => p.Child1).TargetEntry;
                 Assert.Equal(principal.Id, dependent1Entry.Property("ParentId").CurrentValue);
-                Assert.Equal(entityState == EntityState.Added ? EntityState.Added : EntityState.Modified, dependent1Entry.State);
+                Assert.Equal(EntityState.Added, dependent1Entry.State);
                 Assert.Equal(nameof(Parent.Child1), dependent1Entry.Metadata.DefiningNavigationName);
+                Assert.Equal(entityState == EntityState.Added ? null : (EntityState?)EntityState.Deleted,
+                    dependent1Entry.GetInfrastructure().SharedIdentityEntry?.EntityState);
+
                 var dependent2Entry = context.Entry(principal).Reference(p => p.Child2).TargetEntry;
                 Assert.Equal(principal.Id, dependent2Entry.Property("ParentId").CurrentValue);
-                Assert.Equal(entityState == EntityState.Added ? EntityState.Added : EntityState.Modified, dependent2Entry.State);
+                Assert.Equal(EntityState.Added, dependent2Entry.State);
                 Assert.Equal(nameof(Parent.Child2), dependent2Entry.Metadata.DefiningNavigationName);
+                Assert.Equal(entityState == EntityState.Added ? null : (EntityState?)EntityState.Deleted,
+                    dependent2Entry.GetInfrastructure().SharedIdentityEntry?.EntityState);
+
+                dependent1Entry.GetInfrastructure().AcceptChanges();
+                dependent2Entry.GetInfrastructure().AcceptChanges();
+                Assert.Null(dependent1Entry.GetInfrastructure().SharedIdentityEntry);
+                Assert.Null(dependent2Entry.GetInfrastructure().SharedIdentityEntry);
             }
         }
 
@@ -742,14 +764,25 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
                 Assert.Null(principal2.Child2);
                 Assert.Equal(entityState, context.Entry(principal1).State);
                 Assert.Equal(entityState, context.Entry(principal2).State);
+
                 var dependent1Entry = context.Entry(principal1).Reference(p => p.Child2).TargetEntry;
-                Assert.Equal(entityState == EntityState.Added ? EntityState.Added : EntityState.Modified, dependent1Entry.State);
+                Assert.Equal(EntityState.Added, dependent1Entry.State);
                 Assert.Equal(principal1.Id, dependent1Entry.Property("ParentId").CurrentValue);
                 Assert.Equal(nameof(Parent.Child2), dependent1Entry.Metadata.DefiningNavigationName);
+                Assert.Equal(entityState == EntityState.Added ? null : (EntityState?)EntityState.Deleted,
+                    dependent1Entry.GetInfrastructure().SharedIdentityEntry?.EntityState);
+
                 var dependent2Entry = context.Entry(principal2).Reference(p => p.Child1).TargetEntry;
                 Assert.Equal(principal2.Id, dependent2Entry.Property("ParentId").CurrentValue);
-                Assert.Equal(entityState == EntityState.Added ? EntityState.Added : EntityState.Modified, dependent2Entry.State);
+                Assert.Equal(EntityState.Added, dependent2Entry.State);
                 Assert.Equal(nameof(Parent.Child1), dependent2Entry.Metadata.DefiningNavigationName);
+                Assert.Equal(entityState == EntityState.Added ? null : (EntityState?)EntityState.Deleted,
+                    dependent2Entry.GetInfrastructure().SharedIdentityEntry?.EntityState);
+
+                dependent1Entry.GetInfrastructure().AcceptChanges();
+                dependent2Entry.GetInfrastructure().AcceptChanges();
+                Assert.Null(dependent1Entry.GetInfrastructure().SharedIdentityEntry);
+                Assert.Null(dependent2Entry.GetInfrastructure().SharedIdentityEntry);
             }
         }
 
@@ -786,14 +819,25 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
                 Assert.Same(principal1, dependent2.Parent);
                 Assert.Equal(entityState, context.Entry(principal1).State);
                 Assert.Equal(entityState, context.Entry(principal2).State);
+
                 var dependent1Entry = context.Entry(principal1).Reference(p => p.Child2).TargetEntry;
-                Assert.Equal(entityState == EntityState.Added ? EntityState.Added : EntityState.Modified, dependent1Entry.State);
+                Assert.Equal(EntityState.Added, dependent1Entry.State);
                 Assert.Equal(principal1.Id, dependent1Entry.Property("ParentId").CurrentValue);
                 Assert.Equal(nameof(Parent.Child2), dependent1Entry.Metadata.DefiningNavigationName);
+                Assert.Equal(entityState == EntityState.Added ? null : (EntityState?)EntityState.Deleted,
+                    dependent1Entry.GetInfrastructure().SharedIdentityEntry?.EntityState);
+
                 var dependent2Entry = context.Entry(principal2).Reference(p => p.Child1).TargetEntry;
                 Assert.Equal(principal2.Id, dependent2Entry.Property("ParentId").CurrentValue);
-                Assert.Equal(entityState == EntityState.Added ? EntityState.Added : EntityState.Modified, dependent2Entry.State);
+                Assert.Equal(EntityState.Added, dependent2Entry.State);
                 Assert.Equal(nameof(Parent.Child1), dependent2Entry.Metadata.DefiningNavigationName);
+                Assert.Equal(entityState == EntityState.Added ? null : (EntityState?)EntityState.Deleted,
+                    dependent1Entry.GetInfrastructure().SharedIdentityEntry?.EntityState);
+
+                dependent1Entry.GetInfrastructure().AcceptChanges();
+                dependent2Entry.GetInfrastructure().AcceptChanges();
+                Assert.Null(dependent1Entry.GetInfrastructure().SharedIdentityEntry);
+                Assert.Null(dependent2Entry.GetInfrastructure().SharedIdentityEntry);
             }
         }
 
