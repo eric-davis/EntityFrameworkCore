@@ -20,7 +20,6 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
     public class IdentityMap<TKey> : IIdentityMap
     {
         private readonly bool _sensitiveLoggingEnabled;
-        private readonly bool _snapshotTracking;
         private readonly Dictionary<TKey, InternalEntityEntry> _identityMap;
         private readonly IForeignKey[] _foreignKeys;
         private Dictionary<IForeignKey, IDependentsMap> _dependentMaps;
@@ -38,7 +37,6 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
             Key = key;
             PrincipalKeyValueFactory = principalKeyValueFactory;
             _identityMap = new Dictionary<TKey, InternalEntityEntry>(principalKeyValueFactory.EqualityComparer);
-            _snapshotTracking = key.DeclaringEntityType.GetChangeTrackingStrategy() == ChangeTrackingStrategy.Snapshot;
 
             if (key.IsPrimaryKey())
             {
@@ -232,8 +230,7 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
                         return;
                     }
 
-                    if (!_snapshotTracking
-                        || bothStatesEquivalent)
+                    if (bothStatesEquivalent)
                     {
                         ThrowIdentityConflict(entry);
                     }
