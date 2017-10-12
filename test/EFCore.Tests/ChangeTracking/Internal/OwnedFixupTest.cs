@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Xunit;
 
+// ReSharper disable UnusedParameter.Local
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 // ReSharper disable AccessToDisposedClosure
 // ReSharper disable InconsistentNaming
@@ -872,6 +873,30 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
 
             public Child Child1 { get; set; }
             public Child Child2 { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                Assert.False(true);
+                return false;
+            }
+
+            public override int GetHashCode()
+            {
+                Assert.False(true);
+                return base.GetHashCode();
+            }
+
+            public static bool operator ==(Parent value, Parent other)
+            {
+                Assert.False(true);
+                return false;
+            }
+
+            public static bool operator !=(Parent value, Parent other)
+            {
+                Assert.False(true);
+                return true;
+            }
         }
 
         private class Child
@@ -880,6 +905,30 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
 
             public Parent Parent { get; set; }
             public SubChild SubChild { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                Assert.False(true);
+                return false;
+            }
+
+            public override int GetHashCode()
+            {
+                Assert.False(true);
+                return base.GetHashCode();
+            }
+
+            public static bool operator ==(Child value, Child other)
+            {
+                Assert.False(true);
+                return false;
+            }
+
+            public static bool operator !=(Child value, Child other)
+            {
+                Assert.False(true);
+                return true;
+            }
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local
@@ -889,6 +938,30 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking.Internal
             public string Name { get; set; }
 
             public Child Child { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                Assert.False(true);
+                return false;
+            }
+
+            public override int GetHashCode()
+            {
+                Assert.False(true);
+                return base.GetHashCode();
+            }
+
+            public static bool operator ==(SubChild value, SubChild other)
+            {
+                Assert.False(true);
+                return false;
+            }
+
+            public static bool operator !=(SubChild value, SubChild other)
+            {
+                Assert.False(true);
+                return true;
+            }
         }
 
         private class ParentPN
